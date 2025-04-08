@@ -29,12 +29,12 @@ public class Program
             builder.AddBasicHealthChecks();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddDbContext<DefaultContext>(options =>
-                options.UseNpgsql(
-                    builder.Configuration.GetConnectionString("DefaultConnection"),
-                    b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.ORM")
-                )
-            );
+            //builder.Services.AddDbContext<DefaultContext>(options =>
+            //    options.UseNpgsql(
+            //        builder.Configuration.GetConnectionString("PostgreConnectionStringRW"),
+            //        b => b.MigrationsAssembly(typeof(DefaultContext).Assembly.FullName)
+            //    )
+            //);
 
             builder.Services.AddJwtAuthentication(builder.Configuration);
 
@@ -64,6 +64,7 @@ public class Program
             app.UseHttpsRedirection();
 
             app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.UseBasicHealthChecks();

@@ -1,5 +1,7 @@
 ﻿using Ambev.DeveloperEvaluation.IoC.ModuleInitializers;
+using Ambev.DeveloperEvaluation.ORM;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Ambev.DeveloperEvaluation.IoC;
 
