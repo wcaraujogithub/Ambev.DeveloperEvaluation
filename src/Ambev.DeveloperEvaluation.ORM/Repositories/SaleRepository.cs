@@ -57,6 +57,26 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
             await _context.SaveChangesAsync(cancellationToken);
             return true;
         }
+
+        /// <summary>
+        /// Deletes a sale items from the database
+        /// </summary>
+        /// <param name="id">The unique identifier of the sale to delete</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>True if the sale was deleted, false if not found</returns>
+        public async Task<bool> DeleteSaleItemsAsync(Guid saleId, CancellationToken cancellationToken = default)
+        {
+            var itemss = _context.SaleItems.Where(i => i.SaleId == saleId).ToList();
+            var items = _context.SaleItems.Where(i => i.SaleId == saleId);
+            if (items is null)
+                return false;
+
+            _context.SaleItems.RemoveRange(items);
+            await _context.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+
+
         /// <summary>
         /// Deletes a sale from the database
         /// </summary>
