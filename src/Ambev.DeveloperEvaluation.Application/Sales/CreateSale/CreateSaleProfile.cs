@@ -13,7 +13,7 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.CreateSale
             CreateMap<CreateSaleCommand, Sale>()
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(s => s.SaleDate))
                 .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => s.SaleDate))
-                .ForMember(d => d.Itens, o => o.MapFrom(s => s.Itens));
+                .ForMember(d => d.Items, o => o.MapFrom(s => s.Itens));
             CreateMap<Sale, CreateSaleResult>();
 
             // Mapeia os itens

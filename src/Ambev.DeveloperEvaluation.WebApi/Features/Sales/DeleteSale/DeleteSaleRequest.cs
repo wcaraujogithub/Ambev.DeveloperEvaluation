@@ -1,4 +1,4 @@
-namespace Ambev.DeveloperEvaluation.WebApi.Features.Users.DeleteUser;
+namespace Ambev.DeveloperEvaluation.WebApi.Features.Sales.DeleteSale;
 
 /// <summary>
 /// Request model for deleting a user

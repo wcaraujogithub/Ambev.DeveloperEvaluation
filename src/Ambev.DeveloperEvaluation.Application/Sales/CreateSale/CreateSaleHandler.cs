@@ -48,7 +48,7 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
         sale.Id = Guid.NewGuid();
 
         decimal total = 0;
-        foreach (var prod in sale.Itens)
+        foreach (var prod in sale.Items)
         {
             prod.Discounts = CalcularDesconto(prod.Quantities, prod.UnitPrices);
             prod.TotalValueItem = prod.UnitPrices * prod.Quantities - prod.Discounts;

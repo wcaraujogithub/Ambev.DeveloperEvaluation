@@ -15,10 +15,10 @@ namespace Ambev.DeveloperEvaluation.Domain.Validation
           
             RuleFor(x => x.Customer).NotEmpty().WithMessage("Cliente é obrigatório.");
             RuleFor(x => x.Branch).NotEmpty().WithMessage("Filial é obrigatória.");
-            RuleFor(x => x.Itens).NotEmpty().WithMessage("Deve haver ao menos um produto na venda.");
+            RuleFor(x => x.Items).NotEmpty().WithMessage("Deve haver ao menos um produto na venda.");
 
 
-            RuleForEach(x => x.Itens).ChildRules(item =>
+            RuleForEach(x => x.Items).ChildRules(item =>
             {
                 item.RuleFor(i => i.Name).NotEmpty().WithMessage("Nome do produto é obrigatório.");
                 item.RuleFor(i => i.Quantities)

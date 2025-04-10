@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Sales\GetSale\" />
     <Folder Include="Sales\UpdateSale\" />
   </ItemGroup>
 
