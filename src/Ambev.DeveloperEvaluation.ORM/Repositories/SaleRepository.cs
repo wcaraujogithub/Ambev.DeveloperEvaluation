@@ -2,7 +2,8 @@
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
-
+using System.Linq.Dynamic.Core;
+using System.Text.RegularExpressions;
 namespace Ambev.DeveloperEvaluation.ORM.Repositories
 {
     public class SaleRepository : ISaleRepository
@@ -36,9 +37,73 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
         /// </summary>  
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>The sales, null otherwise</returns>
-        public async Task<PagedResult<Sale>> ListAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+        public async Task<Domain.Common.PagedResult<Sale>> ListAsync(int page, int pageSize, string? order, CancellationToken cancellationToken = default)
         {
-            var query = _context.Sales.Include(x => x.Items).AsNoTracking();
+            var query = _context.Sales
+                .Include(x => x.Items)
+                .AsNoTracking();
+
+            // Campos permitidos para ordenação
+            var allowedColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase)  
+            {
+                "Id",                
+                "SaleNumber",
+                "Customer",
+                "TotalValue",
+                "Branch",
+                "CreatedAt",
+                "UpdatedAt",
+                "Cancelled"
+            };
+
+            // Ordenação dinâmica
+            //if (!string.IsNullOrEmpty(order))
+            //{
+            //    query = query.OrderBy(order); // ← dynamic sorting aqui
+            //}
+            //else
+            //{
+            //    query = query.OrderByDescending(s => s.CreatedAt); // padrão
+            //}
+
+            // Validação e aplicação da ordenação
+            if (!string.IsNullOrWhiteSpace(order))
+            {
+                // Divide as colunas por vírgula: "id desc, customer asc"
+                var orderParts = order.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+                var validatedOrderParts = new List<string>();
+
+                foreach (var part in orderParts)
+                {
+                    var match = Regex.Match(part.Trim(), @"^(?<column>\w+)(\s+(?<direction>asc|desc))?$", RegexOptions.IgnoreCase);
+
+                    if (match.Success)
+                    {
+                        var column = match.Groups["column"].Value;
+                        var direction = match.Groups["direction"].Success ? match.Groups["direction"].Value : "asc";
+
+                        if (allowedColumns.Contains(column))
+                        {
+                            validatedOrderParts.Add($"{column} {direction}");
+                        }
+                    }
+                }
+
+                if (validatedOrderParts.Any())
+                {
+                    var validatedOrder = string.Join(", ", validatedOrderParts);
+                    query = query.OrderBy(validatedOrder);
+                }
+                else
+                {
+                    query = query.OrderByDescending(s => s.CreatedAt); // fallback
+                }
+            }
+            else
+            {
+                query = query.OrderByDescending(s => s.CreatedAt); // padrão
+            }
 
             var totalCount = await query.CountAsync(cancellationToken);
          
@@ -47,7 +112,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);
 
-            return new PagedResult<Sale>
+            return new Domain.Common.PagedResult<Sale>
             {
                 Items = items,
                 TotalCount = totalCount,
