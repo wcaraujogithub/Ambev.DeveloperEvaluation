@@ -1,3 +1,4 @@
+using Ambev.DeveloperEvaluation.Common.Constants;
 using FluentValidation;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.GetSale;
@@ -5,15 +6,15 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.GetSale;
 /// <summary>
 /// Validator for GetSaleCommand
 /// </summary>
-public class GetSaleValidator : AbstractValidator<GetSaleCommand>
+public class GetByIdSaleValidator : AbstractValidator<GetByIdSaleQuery>
 {
     /// <summary>
     /// Initializes validation rules for GetSaleCommand
     /// </summary>
-    public GetSaleValidator()
+    public GetByIdSaleValidator()
     {
         RuleFor(x => x.Id)
             .NotEmpty()
-            .WithMessage("Sale ID is required");
+            .WithMessage(ValidationMessages.General.FieldIsRequired);
     }
 }

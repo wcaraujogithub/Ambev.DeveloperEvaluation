@@ -11,7 +11,7 @@ namespace Ambev.DeveloperEvaluation.Domain.Entities
         public decimal? TotalValue { get; set; }
         public string? Branch { get; set; } = string.Empty;
         public List<SaleItem> Items { get; set; }
-        public bool? Cancelled { get; set; }
+        public bool Cancelled { get; set; }
         /// <summary>
         /// Gets the date and time when the sale was created.
         /// </summary>

@@ -54,17 +54,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
                 "CreatedAt",
                 "UpdatedAt",
                 "Cancelled"
-            };
-
-            // Ordenação dinâmica
-            //if (!string.IsNullOrEmpty(order))
-            //{
-            //    query = query.OrderBy(order); // ← dynamic sorting aqui
-            //}
-            //else
-            //{
-            //    query = query.OrderByDescending(s => s.CreatedAt); // padrão
-            //}
+            };         
 
             // Validação e aplicação da ordenação
             if (!string.IsNullOrWhiteSpace(order))
@@ -173,14 +163,18 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
         /// <summary>
         /// Update a sale from the database
         /// </summary>
-        /// <param name="sale">The unique identifier of the sale to atualizar</param>
+        /// <param name="sale">The unique identifier of the sale to Update</param>
         /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>True if the sale was atualizar, false if not found</returns>
-        public async Task<bool> AtualizarAsync(Sale sale, CancellationToken cancellationToken = default)
+        /// <returns>True if the sale was Update, false if not found</returns>
+        public async Task<bool> UpdateAsync(Sale sale, CancellationToken cancellationToken = default)
         {
             var saleUpdate = await GetByIdAsync(sale.Id, cancellationToken);
             if (saleUpdate == null)
                 return false;
+
+            saleUpdate.Branch = sale.Branch;
+            saleUpdate.Customer = sale.Customer;
+            saleUpdate.UpdatedAt = DateTime.UtcNow;
 
             _context.Sales.Update(saleUpdate);
             await _context.SaveChangesAsync(cancellationToken);

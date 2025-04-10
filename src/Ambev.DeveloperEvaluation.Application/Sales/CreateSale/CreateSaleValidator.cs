@@ -1,42 +1,63 @@
-﻿using FluentValidation;
+﻿using Ambev.DeveloperEvaluation.Common.Constants;
+using FluentValidation;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 
 /// <summary>
-/// Validator for CreateUserCommand that defines validation rules for user creation command.
+/// Validator for CreateSaleCommand that defines validation rules for sale creation command.
 /// </summary>
 public class CreateSaleCommandValidator : AbstractValidator<CreateSaleCommand>
 {
     /// <summary>
-    /// Initializes a new instance of the CreateUserCommandValidator with defined validation rules.
+    /// Initializes a new instance of the CreateSaleCommandValidator with defined validation rules.
     /// </summary>
     /// <remarks>
-    /// Validation rules include:
-    /// - Email: Must be in valid format (using EmailValidator)
-    /// - Username: Required, must be between 3 and 50 characters
-    /// - Password: Must meet security requirements (using PasswordValidator)
-    /// - Phone: Must match international format (+X XXXXXXXXXX)
-    /// - Status: Cannot be set to Unknown
-    /// - Role: Cannot be set to None
+    /// Validation rules include: 
+    /// - Customer: Required, length between 3 and 50 characters
+    /// - SaleNumber: Required
+    /// - Branch: Required
+    /// - Products.Name: Required
+    /// - Products.Quantities: Required
+    /// - Products.UnitPrices: Required
+    /// - Products.UnitPrices: Required
     /// </remarks>
     public CreateSaleCommandValidator()
     {
-        RuleFor(user => user.Customer)
-            .MinimumLength(3).WithMessage("Username must be at least 3 characters long.")
-            .MaximumLength(50).WithMessage("Username cannot be longer than 50 characters.");
+        RuleFor(x => x.SaleNumber)
+            .NotEmpty()
+            .WithMessage(ValidationMessages.General.FieldIsRequired);
 
-        RuleFor(x => x.Customer).NotEmpty().WithMessage("Cliente é obrigatório.");
-        RuleFor(x => x.Branch).NotEmpty().WithMessage("Filial é obrigatória.");
-        RuleFor(x => x.Itens).NotEmpty().WithMessage("Deve haver ao menos um produto na venda.");
+        RuleFor(sale => sale.Customer)
+              .NotEmpty().WithMessage(ValidationMessages.General.FieldIsRequired)
+            .MinimumLength(3)
+            .WithMessage(ValidationMessages.General.MaximumLength)
+            .MaximumLength(50)
+            .WithMessage(ValidationMessages.General.MaximumLength); 
+        
+        RuleFor(x => x.Branch)
+            .NotEmpty()
+            .WithMessage(ValidationMessages.General.FieldIsRequired);
 
-        RuleForEach(x => x.Itens).ChildRules(item =>
+        RuleFor(x => x.Items)
+            .NotEmpty()
+            .WithMessage(ValidationMessages.Sale.ProductItensRequired);
+
+        RuleForEach(x => x.Items).ChildRules(item =>
         {
-            item.RuleFor(i => i.Name).NotEmpty().WithMessage("Nome do produto é obrigatório.");
+            item.RuleFor(i => i.Name)
+            .NotEmpty()
+            .WithMessage(ValidationMessages.General.FieldIsRequired);
+
             item.RuleFor(i => i.Quantities)
-                .InclusiveBetween(1, 20)
-                .WithMessage("A quantidade deve estar entre 1 e 20.");
+                  .NotEmpty()
+                  .WithMessage(ValidationMessages.General.FieldIsRequired)
+                  .InclusiveBetween(1, 20)
+                  .WithMessage(ValidationMessages.General.InclusiveBetween);
+
             item.RuleFor(i => i.UnitPrices)
-                .GreaterThan(0).WithMessage("Preço unitário deve ser maior que zero.");
+            .NotEmpty()
+            .WithMessage(ValidationMessages.General.FieldIsRequired)
+            .GreaterThan(0).WithMessage(ValidationMessages.Sale.UnitPricesRequired);
         });
     }
 }

@@ -16,10 +16,10 @@ public class CreateSaleProfile : Profile
 
         CreateMap<CreateSaleResult, CreateSaleResponse>();
         CreateMap<CreateSaleRequest, CreateSaleCommand>()
-            .ForMember(dest => dest.Itens, opt => opt.MapFrom(src => src.Products));
+            .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.Items));
 
         // Mapeia os itens
-        CreateMap<SaleItemRequest, SaleItemDTO>()
+        CreateMap<CreateSaleItemRequest, SaleItemDTO>()
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
             .ForMember(dest => dest.Quantities, opt => opt.MapFrom(src => src.Quantities))
             .ForMember(dest => dest.UnitPrices, opt => opt.MapFrom(src => src.UnitPrices));

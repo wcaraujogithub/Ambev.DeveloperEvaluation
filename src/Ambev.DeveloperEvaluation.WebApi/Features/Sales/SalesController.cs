@@ -11,6 +11,7 @@ using Ambev.DeveloperEvaluation.WebApi.Features.Sales.ListSales;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.DeleteSale;
 using Ambev.DeveloperEvaluation.Application.Sales.ListSales;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Application.Sales.UpdateSale;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Sales;
 
@@ -56,16 +57,8 @@ public class SalesController : BaseController
 
         var command = _mapper.Map<CreateSaleCommand>(request);
         var response = await _mediator.Send(command, cancellationToken);
-
-        //return Created(string.Empty, new ApiResponseWithData<CreateSaleResponse>
-        //{
-        //    Success = true,
-        //    Message = "Sale created successfully",
-        //    Data = _mapper.Map<CreateSaleResponse>(response)
-        //});
-
-
-        return Ok(_mapper.Map<CreateSaleResponse>(response));
+        var result = _mapper.Map<CreateSaleResponse>(response);
+        return Ok(result);
     }
 
 
@@ -118,7 +111,7 @@ public class SalesController : BaseController
         if (!validationResult.IsValid)
             return BadRequest(validationResult.Errors);
 
-        var command = _mapper.Map<GetSaleCommand>(request.Id);
+        var command = _mapper.Map<GetByIdSaleQuery>(request.Id);
         var response = await _mediator.Send(command, cancellationToken);
 
         var result = _mapper.Map<GetSaleResponse>(response);
@@ -129,7 +122,6 @@ public class SalesController : BaseController
             return Ok(result);
 
     }
-
 
     /// <summary>
     /// List the Sales
@@ -156,5 +148,33 @@ public class SalesController : BaseController
         return OkPaginated(paginated);
     }
 
+    /// <summary>
+    /// Update a Sale by their ID
+    /// </summary>
+    /// <param name="id">The unique identifier of the Sale</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The Sale details if found</returns>
+    [HttpPut]
+    [ProducesResponseType(typeof(ApiResponseWithData<UpdateSaleRequest>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateSale([FromBody] UpdateSaleRequest request, CancellationToken cancellationToken)
+    {     
+        var validator = new UpdateSaleRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
+
+        var command = _mapper.Map<UpdateSaleCommand>(request);
+        var response = await _mediator.Send(command, cancellationToken);
+
+        var result = _mapper.Map<UpdateSaleResponse>(response);
+
+        if (result is null)
+            return NotFound(result);
+        else
+            return Ok(result);
+
+    }
 }

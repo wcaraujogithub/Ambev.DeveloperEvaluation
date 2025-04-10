@@ -13,8 +13,8 @@ public class GetSaleProfile : Profile
     /// </summary>
     public GetSaleProfile()
     {
-        CreateMap<Sale, GetSaleResult>()
-            .ForMember(dest => dest.Itens, opt => opt.MapFrom(src => src.Items));
+        CreateMap<Sale, GetByIdSaleQueryResult>()
+            .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.Items));
 
         // Mapeia os itens
         CreateMap<SaleItem, GetSaleItemResult>();

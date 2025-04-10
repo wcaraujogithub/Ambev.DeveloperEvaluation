@@ -1,17 +1,17 @@
 ﻿using Ambev.DeveloperEvaluation.Common.Validation;
 using MediatR;
 
-namespace Ambev.DeveloperEvaluation.Application.Sales.CreateSale
+namespace Ambev.DeveloperEvaluation.Application.Sales.UpdateSale
 {
-    public class CreateSaleCommand : IRequest<CreateSaleResult>
+    public class UpdateSaleRequest 
     {
-        public string? SaleNumber { get; set; }
+        public Guid Id { get; set; }
         public string? Customer { get; set; }
         public string? Branch { get; set; }
-        public List<SaleItemDTO>? Items { get; set; }
+
         public ValidationResultDetail Validate()
         {
-            var validator = new CreateSaleCommandValidator();
+            var validator = new UpdateSaleRequestValidator();
             var result = validator.Validate(this);
             return new ValidationResultDetail
             {
@@ -19,12 +19,5 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.CreateSale
                 Errors = result.Errors.Select(o => (ValidationErrorDetail)o)
             };
         }
-    }
-
-    public class SaleItemDTO
-    {
-        public string Name { get; set; } = string.Empty;
-        public int Quantities { get; set; }
-        public decimal UnitPrices { get; set; }
     }
 }

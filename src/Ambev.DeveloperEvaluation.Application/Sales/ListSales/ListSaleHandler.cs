@@ -34,7 +34,7 @@ public class ListSaleHandler : IRequestHandler<ListSalesQuery, PagedResult<ListS
     /// <returns>list sales if found</returns>
     public async Task<PagedResult<ListSaleResult>> Handle(ListSalesQuery request, CancellationToken cancellationToken)
     {
-        var pagedSales = await _saleRepository.ListAsync(request.PageNumber, request.PageSize, cancellationToken);
+        var pagedSales = await _saleRepository.ListAsync(request._page, request._size, request._order, cancellationToken);
 
         if (!pagedSales.Items.Any())
             throw new KeyNotFoundException($"Sales not found");

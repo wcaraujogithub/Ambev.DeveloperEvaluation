@@ -14,11 +14,11 @@ public class GetSaleProfile : Profile
     /// </summary>
     public GetSaleProfile()
     {
-        CreateMap<Guid, GetSaleCommand>()
-            .ConstructUsing(id => new GetSaleCommand(id));
+        CreateMap<Guid, GetByIdSaleQuery>()
+            .ConstructUsing(id => new GetByIdSaleQuery(id));
 
-        CreateMap<GetSaleResult, GetSaleResponse>()
-          .ForMember(dest => dest.Itens, opt => opt.MapFrom(src => src.Itens));
+        CreateMap<GetByIdSaleQueryResult, GetSaleResponse>()
+          .ForMember(dest => dest.Itens, opt => opt.MapFrom(src => src.Items));
 
         // Mapeia os itens
         CreateMap<GetSaleItemResult, GetSaleItemResponse>();   

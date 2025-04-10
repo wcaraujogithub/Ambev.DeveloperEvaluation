@@ -14,5 +14,6 @@
         /// </summary>
         /// <value>A GUID that uniquely identifies the created sale in the system.</value>
         public Guid Id { get; set; }
+        public bool Success { get; set; }
     }
 }

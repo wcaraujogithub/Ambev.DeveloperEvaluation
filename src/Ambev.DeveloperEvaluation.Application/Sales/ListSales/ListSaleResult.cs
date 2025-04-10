@@ -9,14 +9,14 @@ public class ListSaleResult
     /// The unique identifier of the Sale
     /// </summary>
     public Guid Id { get; set; }
-    public List<ListSaleItemResult>? Items { get; set; }
-    public int Quantities { get; set; }
-    public decimal UnitPrices { get; set; }
+    public List<ListSaleItemResult>? Items { get; set; }  
     public bool? Cancelled { get; set; }
-    public string? SaleNumber { get; set; }
-    public DateTime? SaleDate { get; set; }
+    public string? SaleNumber { get; set; }  
     public string? Customer { get; set; }
     public string? Branch { get; set; }
+    public string? TotalValue { get; set; }
+    public DateTime? CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 }
 
 public class ListSaleItemResult

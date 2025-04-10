@@ -8,7 +8,7 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.GetSale;
 /// <summary>
 /// Handler for processing GetSaleCommand requests
 /// </summary>
-public class GetSaleHandler : IRequestHandler<GetSaleCommand, GetSaleResult>
+public class GetSaleHandler : IRequestHandler<GetByIdSaleQuery, GetByIdSaleQueryResult>
 {
     private readonly ISaleRepository _SaleRepository;
     private readonly IMapper _mapper;
@@ -33,9 +33,9 @@ public class GetSaleHandler : IRequestHandler<GetSaleCommand, GetSaleResult>
     /// <param name="request">The GetSale command</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The Sale details if found</returns>
-    public async Task<GetSaleResult> Handle(GetSaleCommand request, CancellationToken cancellationToken)
+    public async Task<GetByIdSaleQueryResult> Handle(GetByIdSaleQuery request, CancellationToken cancellationToken)
     {
-        var validator = new GetSaleValidator();
+        var validator = new GetByIdSaleValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
@@ -45,6 +45,6 @@ public class GetSaleHandler : IRequestHandler<GetSaleCommand, GetSaleResult>
         if (Sale == null)
             throw new KeyNotFoundException($"Sale with ID {request.Id} not found");
 
-        return _mapper.Map<GetSaleResult>(Sale);
+        return _mapper.Map<GetByIdSaleQueryResult>(Sale);
     }
 }

@@ -8,13 +8,13 @@ public class ListSaleResponse
 
     public Guid Id { get; set; }
     public List<ListSaleItemResponse>? Items { get; set; }
-    public int Quantities { get; set; }
-    public decimal UnitPrices { get; set; }
     public bool? Cancelled { get; set; }
     public string? SaleNumber { get; set; }
-    public DateTime? SaleDate { get; set; }
     public string? Customer { get; set; }
     public string? Branch { get; set; }
+    public string? TotalValue { get; set; }
+    public string? CreatedAt { get; set; }
+    public string? UpdatedAt { get; set; }
 }
 public class ListSaleItemResponse
 {

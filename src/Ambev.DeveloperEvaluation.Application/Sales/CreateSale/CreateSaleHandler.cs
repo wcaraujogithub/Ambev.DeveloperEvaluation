@@ -4,7 +4,6 @@ using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Common.Security;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 
@@ -55,9 +54,11 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
             total += prod.TotalValueItem;
         }
         sale.TotalValue = total;
-        var createdSale = await _saleRepository.CreateAsync(sale, cancellationToken);
-        var result = _mapper.Map<CreateSaleResult>(createdSale);
+        sale.CreatedAt = DateTime.UtcNow;
+        sale.UpdatedAt = DateTime.UtcNow;
 
+        var createdSale = await _saleRepository.CreateAsync(sale, cancellationToken);
+        var result = _mapper.Map<CreateSaleResult>(createdSale);       
         return result;
     }
 
