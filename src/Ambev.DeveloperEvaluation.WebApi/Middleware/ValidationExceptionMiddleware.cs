@@ -8,10 +8,11 @@ namespace Ambev.DeveloperEvaluation.WebApi.Middleware
     public class ValidationExceptionMiddleware
     {
         private readonly RequestDelegate _next;
-
-        public ValidationExceptionMiddleware(RequestDelegate next)
+        private readonly ILogger<ValidationExceptionMiddleware> _logger;
+        public ValidationExceptionMiddleware(RequestDelegate next, ILogger<ValidationExceptionMiddleware> logger)
         {
             _next = next;
+            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -23,6 +24,24 @@ namespace Ambev.DeveloperEvaluation.WebApi.Middleware
             catch (ValidationException ex)
             {
                 await HandleValidationExceptionAsync(context, ex);
+
+            }
+            //catch (ValidationException ex)
+            //{
+            //    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            //    var errors = ex.Errors.Select(e => e.ErrorMessage).ToList();
+            //    await context.Response.WriteAsJsonAsync(new { message = "Validation error", errors });
+            //}
+            catch (KeyNotFoundException ex)
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                await context.Response.WriteAsJsonAsync(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled exception");
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                await context.Response.WriteAsJsonAsync(new { message = "An unexpected error occurred" });
             }
         }
 

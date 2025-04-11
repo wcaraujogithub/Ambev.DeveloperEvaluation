@@ -1,7 +1,6 @@
 using MediatR;
 using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
-using Ambev.DeveloperEvaluation.Domain.Entities;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.DeleteSale;
 
@@ -17,8 +16,7 @@ public class DeleteSaleHandler : IRequestHandler<DeleteSaleCommand, DeleteSaleRe
     /// </summary>
     /// <param name="SaleRepository">The sale repository</param>
     /// <param name="validator">The validator for DeleteSaleCommand</param>
-    public DeleteSaleHandler(
-        ISaleRepository SaleRepository)
+    public DeleteSaleHandler(ISaleRepository SaleRepository)
     {
         _saleRepository = SaleRepository;
     }
@@ -38,14 +36,14 @@ public class DeleteSaleHandler : IRequestHandler<DeleteSaleCommand, DeleteSaleRe
             throw new ValidationException(validationResult.Errors);
 
         // Remove os itens primeiro 
-        var success = await _saleRepository.DeleteSaleItemsAsync(request.Id);
-        if (!success)
+        var deleteItemsSale = await _saleRepository.DeleteSaleItemsAsync(request.Id);
+        if (deleteItemsSale is null)
             throw new KeyNotFoundException($"Sale items with ID {request.Id} not found");
 
-        success = await _saleRepository.DeleteAsync(request.Id, cancellationToken);
-        if (!success)
+        var deleteISale = await _saleRepository.DeleteAsync(request.Id, cancellationToken);
+        if (deleteISale is null)
             throw new KeyNotFoundException($"Sale with ID {request.Id} not found");
 
-        return new DeleteSaleResponse { Success = success };
+        return new DeleteSaleResponse { Success = true };
     }
 }

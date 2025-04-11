@@ -1,5 +1,4 @@
-﻿using Ambev.DeveloperEvaluation.Domain.Common;
-using Ambev.DeveloperEvaluation.Domain.Entities;
+﻿using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
@@ -44,9 +43,9 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
                 .AsNoTracking();
 
             // Campos permitidos para ordenação
-            var allowedColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase)  
+            var allowedColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                "Id",                
+                "Id",
                 "SaleNumber",
                 "Customer",
                 "TotalValue",
@@ -54,7 +53,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
                 "CreatedAt",
                 "UpdatedAt",
                 "Cancelled"
-            };         
+            };
 
             // Validação e aplicação da ordenação
             if (!string.IsNullOrWhiteSpace(order))
@@ -96,7 +95,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
             }
 
             var totalCount = await query.CountAsync(cancellationToken);
-         
+
             var items = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -110,7 +109,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
                 PageSize = pageSize
             };
         }
-   
+
         /// <summary>
         /// Retrieves a sale by their unique identifier
         /// </summary>
@@ -125,21 +124,26 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
                 .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
         }
 
+
+        //Boas práticas: retornar null ao invés de bool  
+        //DeleteAsync e UpdateAsync,o correto é retornar o objeto atualizado 
+        //ou deletado(ou null), ao invés de apenas bool.
+
         /// <summary>
         /// Delete a sale from the database
         /// </summary>
         /// <param name="id">The unique identifier of the sale to delete</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>True if the sale was deleted, false if not found</returns>
-        public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+        public async Task<Sale?> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var sale = await GetByIdAsync(id, cancellationToken);
             if (sale is null)
-                return false;
+                return null;
 
             _context.Sales.Remove(sale);
             await _context.SaveChangesAsync(cancellationToken);
-            return true;
+            return sale;
         }
 
         /// <summary>
@@ -148,16 +152,20 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
         /// <param name="saleId">The unique identifier of the sale to delete</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>True if the sale was deleted, false if not found</returns>
-        public async Task<bool> DeleteSaleItemsAsync(Guid saleId, CancellationToken cancellationToken = default)
+        public async Task<List<SaleItem>?> DeleteSaleItemsAsync(Guid saleId, CancellationToken cancellationToken = default)
         {
-            var itemss = _context.SaleItems.Where(i => i.SaleId == saleId).ToList();
-            var items = _context.SaleItems.Where(i => i.SaleId == saleId);
-            if (items is null)
-                return false;
+            var items = await _context.SaleItems
+                .Where(i => i.SaleId == saleId)
+                .ToListAsync(cancellationToken);
+
+            if (!items.Any())
+                return null;
 
             _context.SaleItems.RemoveRange(items);
-            await _context.SaveChangesAsync(cancellationToken);
-            return true;
+
+            var result = await _context.SaveChangesAsync(cancellationToken);
+
+            return result >= 1 ? items : null;
         }
 
         /// <summary>
@@ -166,11 +174,15 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
         /// <param name="sale">The unique identifier of the sale to Update</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>True if the sale was Update, false if not found</returns>
-        public async Task<bool> UpdateAsync(Sale sale, CancellationToken cancellationToken = default)
+        public async Task<Sale?> UpdateAsync(Sale sale, CancellationToken cancellationToken = default)
         {
             var saleUpdate = await GetByIdAsync(sale.Id, cancellationToken);
             if (saleUpdate == null)
-                return false;
+                return null;
+
+            //como estou atualizando apenas alguns.
+            //Se no futuro precisar atualizar também os itens da venda,
+            //isso pode causar inconsistência.
 
             saleUpdate.Branch = sale.Branch;
             saleUpdate.Customer = sale.Customer;
@@ -178,7 +190,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
 
             _context.Sales.Update(saleUpdate);
             await _context.SaveChangesAsync(cancellationToken);
-            return true;
+            return sale;
         }
     }
 }

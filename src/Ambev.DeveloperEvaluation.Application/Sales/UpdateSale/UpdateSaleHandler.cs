@@ -16,7 +16,7 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
 {
     private readonly ISaleRepository _saleRepository;
     private readonly IMapper _mapper;
-    private readonly IPasswordHasher _passwordHasher;
+
 
     /// <summary>
     /// Initializes a new instance of UpdateSaleHandler
@@ -24,11 +24,10 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
     /// <param name="SaleRepository">The Sale repository</param>
     /// <param name="mapper">The AutoMapper instance</param>
     /// <param name="validator">The validator for UpdateSaleCommand</param>
-    public UpdateSaleHandler(ISaleRepository saleRepository, IMapper mapper, IPasswordHasher passwordHasher)
+    public UpdateSaleHandler(ISaleRepository saleRepository, IMapper mapper)
     {
         _saleRepository = saleRepository;
         _mapper = mapper;
-        _passwordHasher = passwordHasher;
     }
 
     /// <summary>
@@ -48,8 +47,12 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
 
         var sale = _mapper.Map<Sale>(command);
        
-        var success = await _saleRepository.UpdateAsync(sale, cancellationToken);
+        var result = await _saleRepository.UpdateAsync(sale, cancellationToken);
+        if (result is not null)
+            throw new ValidationException("Falha em atualizar o sale");
 
-        return new UpdateSaleResult { Success = success };       
+
+
+        return new UpdateSaleResult { Success = true };       
     }   
 }

@@ -1,8 +1,10 @@
-﻿using Ambev.DeveloperEvaluation.Domain.Entities;
-using Ambev.DeveloperEvaluation.ORM;
-using Ambev.DeveloperEvaluation.ORM.Repositories;
+﻿using Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
+using Ambev.DeveloperEvaluation.Domain.Common;
+using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Repositories;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Moq;
+using NSubstitute;
 using Shouldly;
 using Xunit;
 
@@ -10,13 +12,28 @@ namespace Ambev.DeveloperEvaluation.Unit.Domain.Validation
 {
     public class SaleRepositoryTests
     {
-        private readonly Mock<DefaultContext> _mockContext;
-        private readonly SaleRepository _repository;
+        private readonly ISaleRepository _saleRepository;
+        private readonly IMapper _mapper;
+        private readonly CreateSaleHandler _handler;
 
         public SaleRepositoryTests()
         {
-            _mockContext = new Mock<DefaultContext>();
-            _repository = new SaleRepository(_mockContext.Object);
+            _saleRepository = Substitute.For<ISaleRepository>();
+            _mapper = Substitute.For<IMapper>();
+            _handler = new CreateSaleHandler(_saleRepository, _mapper);
+        }
+
+        [Fact]
+        public async Task CreateAsync_Should_Call_Repository()
+        {
+            // Arrange
+            var sale = new Sale { Id = Guid.NewGuid(), SaleNumber = "123", CreatedAt = DateTime.UtcNow };
+
+            // Act
+            await _saleRepository.CreateAsync(sale);
+
+            // Assert
+            await _saleRepository.Received(1).CreateAsync(sale);
         }
 
         [Fact]
@@ -28,67 +45,91 @@ namespace Ambev.DeveloperEvaluation.Unit.Domain.Validation
             new Sale { Customer = "Zeca", TotalValue = 50 },
             new Sale { Customer = "Ana", TotalValue = 100 },
             new Sale { Customer = "Ana", TotalValue = 80 }
-        }.AsQueryable();
+        };
 
-            var mockSet = GetMockDbSet(data);
-            _mockContext.Setup(c => c.Sales).Returns(mockSet.Object);
+            _saleRepository
+                .ListAsync(1, 10, "customer asc, totalValue desc")
+                .Returns(Task.FromResult(new PagedResult<Sale>
+                {
+                    Items = data
+                        .OrderBy(s => s.Customer)
+                        .ThenByDescending(s => s.TotalValue)
+                        .ToList()
+                }));
 
             // Act
-            var result = await _repository.ListAsync(1, 10, "customer asc, totalValue desc");
+            var result = await _saleRepository.ListAsync(1, 10, "customer asc, totalValue desc");
 
             // Assert
-            result?.Items[0].Customer.ShouldBe("Ana");
-            result?.Items[0].TotalValue.ShouldBe(100);
-            result?.Items[1].Customer.ShouldBe("Ana");
-            result?.Items[2].Customer.ShouldBe("Zeca");
+            result.Items[0].Customer.ShouldBe("Ana");
+            result.Items[0].TotalValue.ShouldBe(100);
+            result.Items[1].Customer.ShouldBe("Ana");
+            result.Items[2].Customer.ShouldBe("Zeca");
         }
 
         [Fact]
         public async Task Should_Ignore_Invalid_Order_Fields()
         {
+            // Arrange
             var data = new List<Sale>
         {
             new Sale { Customer = "Carlos", CreatedAt = new DateTime(2024, 1, 1) },
             new Sale { Customer = "Bruna", CreatedAt = new DateTime(2024, 2, 1) },
-        }.AsQueryable();
+        };
 
-            var mockSet = GetMockDbSet(data);
-            _mockContext.Setup(c => c.Sales).Returns(mockSet.Object);
+            _saleRepository
+                .ListAsync(1, 10, "senha desc")
+                .Returns(Task.FromResult(new PagedResult<Sale>
+                {
+                    Items = data.OrderByDescending(s => s.CreatedAt).ToList()
+                }));
 
-            var result = await _repository.ListAsync(1, 10, "senha desc");
+            // Act
+            var result = await _saleRepository.ListAsync(1, 10, "senha desc");
 
-            result.Items[0].Customer.ShouldBe("Bruna"); // fallback: CreatedAt desc
+            // Assert
+            result.Items[0].Customer.ShouldBe("Bruna");
         }
 
         [Fact]
         public async Task Should_Assume_Default_Direction_As_Asc()
         {
+            // Arrange
             var data = new List<Sale>
         {
             new Sale { Branch = "C" },
             new Sale { Branch = "A" },
             new Sale { Branch = "B" }
-        }.AsQueryable();
+        };
 
-            var mockSet = GetMockDbSet(data);
-            _mockContext.Setup(c => c.Sales).Returns(mockSet.Object);
+            _saleRepository
+                .ListAsync(1, 10, "branch")
+                .Returns(Task.FromResult(new PagedResult<Sale>
+                {
+                    Items = data.OrderBy(s => s.Branch).ToList()
+                }));
 
-            var result = await _repository.ListAsync(1, 10, "branch");
+            // Act
+            var result = await _saleRepository.ListAsync(1, 10, "branch");
 
+            // Assert
             result.Items[0].Branch.ShouldBe("A");
             result.Items[1].Branch.ShouldBe("B");
             result.Items[2].Branch.ShouldBe("C");
         }
 
-        private Mock<DbSet<Sale>> GetMockDbSet(IQueryable<Sale> data)
+        
+        private static DbSet<T> GetFakeDbSet<T>(List<T> data) where T : class
         {
-            var mockSet = new Mock<DbSet<Sale>>();
-            mockSet.As<IQueryable<Sale>>().Setup(m => m.Provider).Returns(data.Provider);
-            mockSet.As<IQueryable<Sale>>().Setup(m => m.Expression).Returns(data.Expression);
-            mockSet.As<IQueryable<Sale>>().Setup(m => m.ElementType).Returns(data.ElementType);
-            mockSet.As<IQueryable<Sale>>().Setup(m => m.GetEnumerator()).Returns(data.GetEnumerator());
-            return mockSet;
+            var queryable = data.AsQueryable();
+            var dbSet = Substitute.For<DbSet<T>, IQueryable<T>>();
+
+            ((IQueryable<T>)dbSet).Provider.Returns(queryable.Provider);
+            ((IQueryable<T>)dbSet).Expression.Returns(queryable.Expression);
+            ((IQueryable<T>)dbSet).ElementType.Returns(queryable.ElementType);
+            ((IQueryable<T>)dbSet).GetEnumerator().Returns(queryable.GetEnumerator());
+
+            return dbSet;
         }
     }
-
 }

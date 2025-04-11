@@ -5,6 +5,7 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.CreateSale
 {
     public class CreateSaleCommand : IRequest<CreateSaleResult>
     {
+        public Guid Id { get; set; } = Guid.NewGuid();
         public string? SaleNumber { get; set; }
         public string? Customer { get; set; }
         public string? Branch { get; set; }

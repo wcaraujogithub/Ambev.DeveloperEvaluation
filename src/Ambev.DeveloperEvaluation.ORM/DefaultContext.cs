@@ -1,5 +1,7 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
 using System.Reflection;
 
 namespace Ambev.DeveloperEvaluation.ORM;
@@ -21,7 +23,7 @@ public class DefaultContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 }
-//}
+
 //public class YourDbContextFactory : IDesignTimeDbContextFactory<DefaultContext>
 //{
 //    public DefaultContext CreateDbContext(string[] args)
@@ -32,12 +34,12 @@ public class DefaultContext : DbContext
 //            .Build();
 
 //        var builder = new DbContextOptionsBuilder<DefaultContext>();
-//        //var connectionString = configuration.GetConnectionString("PostgreConnectionStringRW");
+//        var connectionString = configuration.GetConnectionString("PostgreConnectionStringRW");
 
-//        //builder.UseNpgsql(
-//        //       connectionString,
-//        //   b => b.MigrationsAssembly(typeof(DefaultContext).Assembly.FullName)
-//        //);
+//        builder.UseNpgsql(
+//               connectionString,
+//           b => b.MigrationsAssembly(typeof(DefaultContext).Assembly.FullName)
+//        );
 
 //        return new DefaultContext(builder.Options);
 //    }
