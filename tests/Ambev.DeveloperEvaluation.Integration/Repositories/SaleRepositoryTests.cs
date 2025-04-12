@@ -35,7 +35,7 @@ namespace Ambev.DeveloperEvaluation.Integration.Repositories
         {
             // CREATE
             var sale = SaleTestData.GenerateValidSale();
-            sale.Items = [SaleTestData.GenerateValidSaleItem()];
+            //sale.Items = [SaleTestData.GenerateValidSaleItem()];
 
             var created = await _repository.CreateAsync(sale);
             Assert.NotNull(created);

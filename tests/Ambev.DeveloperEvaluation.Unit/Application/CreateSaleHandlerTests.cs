@@ -34,7 +34,7 @@ namespace Ambev.DeveloperEvaluation.Unit.Application
 
             // Given
             var command = CreateSaleHandlerTestData.GenerateValidSaleCommand();
-            command.Items = [CreateSaleHandlerTestData.GenerateValidSaleItemCommand()];
+            //command.Items = [CreateSaleHandlerTestData.GenerateValidSaleItemCommand()];
 
             Sale? saleReturns = new Sale
             {
@@ -97,7 +97,7 @@ namespace Ambev.DeveloperEvaluation.Unit.Application
         {
             // Given
             var command = CreateSaleHandlerTestData.GenerateValidSaleCommand();
-            command.Items = [CreateSaleHandlerTestData.GenerateValidSaleItemCommand()];
+         //   command.Items = [CreateSaleHandlerTestData.GenerateValidSaleItemCommand()];
 
 
             Sale? saleReturns = new Sale
@@ -136,6 +136,7 @@ namespace Ambev.DeveloperEvaluation.Unit.Application
                 c.Customer == command.Customer &&
                 c.Items == command.Items));
         }
+
     }
 }
 

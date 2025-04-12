@@ -189,8 +189,9 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
             saleUpdate.UpdatedAt = DateTime.UtcNow;
 
             _context.Sales.Update(saleUpdate);
-            await _context.SaveChangesAsync(cancellationToken);
-            return sale;
+            var result = await _context.SaveChangesAsync(cancellationToken);
+
+            return result >= 1 ? sale : null; ;
         }
     }
 }

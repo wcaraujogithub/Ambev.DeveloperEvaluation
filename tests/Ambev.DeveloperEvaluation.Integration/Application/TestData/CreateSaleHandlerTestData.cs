@@ -1,7 +1,7 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 using Bogus;
 
-namespace Ambev.DeveloperEvaluation.Unit.Application.TestData
+namespace Ambev.DeveloperEvaluation.Integration.Application.TestData
 {
     public static class CreateSaleHandlerTestData
     {
@@ -18,7 +18,7 @@ namespace Ambev.DeveloperEvaluation.Unit.Application.TestData
         private static readonly Faker<SaleItemDTO>
                 createSaleItemHandlerFaker = new Faker<SaleItemDTO>()
         .RuleFor(u => u.Name, f => f.Commerce.ProductName())
-        .RuleFor(u => u.Quantities, f => f.Random.Number(1,20))
+        .RuleFor(u => u.Quantities, f => f.Random.Number(1, 20))
         .RuleFor(u => u.UnitPrices, f => f.Random.Decimal());
 
 

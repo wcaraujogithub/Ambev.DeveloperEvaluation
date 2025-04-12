@@ -13,8 +13,11 @@ namespace Ambev.DeveloperEvaluation.Integration.Domain.Entities.TestData
     .RuleFor(u => u.Branch, f => f.Company.CompanyName())
     .RuleFor(u => u.Cancelled, f => f.PickRandomParam(new bool[] { true, true, false }))
     .RuleFor(u => u.CreatedAt, f => f.Date.Recent(100))
-    .RuleFor(u => u.UpdatedAt, f => f.Date.Recent(100));
-
+    .RuleFor(u => u.UpdatedAt, f => f.Date.Recent(100))
+            .RuleFor(u => u.Items, f => new List<SaleItem>
+            {
+                SaleItemFaker.Generate()
+            });
 
 
 

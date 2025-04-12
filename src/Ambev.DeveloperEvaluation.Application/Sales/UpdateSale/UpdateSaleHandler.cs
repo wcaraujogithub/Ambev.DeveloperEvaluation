@@ -48,11 +48,12 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
         var sale = _mapper.Map<Sale>(command);
        
         var result = await _saleRepository.UpdateAsync(sale, cancellationToken);
-        if (result is not null)
-            throw new ValidationException("Falha em atualizar o sale");
+        if (result is null)
+            throw new KeyNotFoundException($"Sale com ID {command.Id} não encontrada.");
+
+        var update = _mapper.Map<UpdateSaleResult>(result);
 
 
-
-        return new UpdateSaleResult { Success = true };       
+        return update;       
     }   
 }

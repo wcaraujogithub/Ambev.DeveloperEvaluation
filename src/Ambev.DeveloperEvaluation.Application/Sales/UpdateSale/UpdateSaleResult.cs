@@ -12,6 +12,9 @@
         /// <summary>
         /// Indicates whether the updated was successful
         /// </summary>
-        public bool Success { get; set; }
+        /// 
+        public Guid Id { get; set; }
+        public string? Customer { get; set; }
+        public string? Branch { get; set; }  
     }
 }
