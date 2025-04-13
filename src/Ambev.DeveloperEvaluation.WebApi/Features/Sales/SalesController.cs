@@ -11,6 +11,7 @@ using Ambev.DeveloperEvaluation.WebApi.Features.Sales.ListSales;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.DeleteSale;
 using Ambev.DeveloperEvaluation.Application.Sales.ListSales;
 using Ambev.DeveloperEvaluation.Application.Sales.UpdateSale;
+using Ambev.DeveloperEvaluation.WebApi.Middleware;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Sales;
 
@@ -46,6 +47,7 @@ public class SalesController : BaseController
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponseWithData<CreateSaleResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [Idempotent(24)]
     public async Task<IActionResult> CreateSale([FromBody] CreateSaleRequest request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Iniciando requisição name: {@name} - request: {@request}", nameof(CreateSale), request);
@@ -77,9 +79,10 @@ public class SalesController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [Idempotent(24)]
     public async Task<IActionResult> DeleteSale([FromRoute] Guid id, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Iniciando requisição name: {@name} - ID: {@id}", nameof(DeleteSale), id);
+        _logger.LogInformation("Iniciando requisição name: {@name} - ID: {@id}", nameof(DeleteSale), id);  
         var request = new DeleteSaleRequest { Id = id };
         var validator = new DeleteSaleRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
@@ -180,6 +183,7 @@ public class SalesController : BaseController
     [ProducesResponseType(typeof(ApiResponseWithData<UpdateSaleRequest>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    [Idempotent(24)]
     public async Task<IActionResult> UpdateSale([FromBody] UpdateSaleRequest request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Iniciando requisição name: {@name} - request: {@request}", nameof(UpdateSale), request);
