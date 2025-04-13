@@ -8,7 +8,7 @@ namespace Ambev.DeveloperEvaluation.Unit.Application.Validation
     public class CreateSaleCommandValidatorTests
     {
         [Fact]
-        public void Should_Return_Validation_Error_When_No_Items()
+        public void Should_Return_Valid_Error_When_No_Items()
         {
             var command = new CreateSaleCommand
             {
@@ -24,7 +24,7 @@ namespace Ambev.DeveloperEvaluation.Unit.Application.Validation
         }
 
         [Fact]
-        public void Should_Pass_Validation_With_Valid_Data()
+        public void Should_Pass_Valid_With_Valid_Data()
         {
             var command = new CreateSaleCommand
             {
@@ -49,7 +49,7 @@ namespace Ambev.DeveloperEvaluation.Unit.Application.Validation
         }
 
         [Fact]
-        public void Should_Invalidate_When_Item_Has_Zero_Quantity()
+        public void Should_Invalid_When_Item_Has_Zero_Quantity()
         {
             var command = new CreateSaleCommand
             {
@@ -70,5 +70,51 @@ namespace Ambev.DeveloperEvaluation.Unit.Application.Validation
             result.IsValid.Should().BeFalse();
             result.Errors.Should().Contain(e => e.ErrorMessage.Contains(ValidationMessages.General.InclusiveBetween)); 
         }
+
+        [Fact]
+        public void Should_Return_Valid_Result()
+        {
+            // Arrange
+            var command = new CreateSaleCommand
+            {
+                SaleNumber = "123456",
+                Customer = "John Doe",
+                Branch = "Main",
+                Items = new List<SaleItemDTO>
+                {
+                    new SaleItemDTO { Name="produto1", Quantities = 2,  UnitPrices = 10 }
+                }
+            };
+
+            // Act
+            var result = command.Validate();
+
+            // Assert
+            result.IsValid.Should().BeTrue();
+            result.Errors.Should().BeEmpty();
+        }
+      
+        [Fact]
+        public void Should_Return_Invalid_Result_When_Missing_Fields()
+        {
+            // Arrange
+            var command = new CreateSaleCommand
+            {
+                // Campos em branco
+                SaleNumber = "",
+                Customer = "",
+                Branch = "",
+                Items = null
+            };
+
+            // Act
+            var result = command.Validate();
+
+            // Assert
+            result.IsValid.Should().BeFalse();
+            result.Errors.Should().NotBeEmpty();
+        }
+
+
     }
 }

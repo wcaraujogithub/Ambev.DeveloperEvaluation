@@ -3,6 +3,7 @@ using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using AutoMapper;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
 
@@ -15,18 +16,19 @@ namespace Ambev.DeveloperEvaluation.Unit.Application
         private readonly ISaleRepository _repositoryMock;
         private readonly IMapper _mapper;
         private readonly UpdateSaleHandler _handler;
-
+        private readonly ILogger<UpdateSaleHandler> _loggerMock;
         public UpdateSaleHandlerTests()
         {
             _repositoryMock = Substitute.For<ISaleRepository>();
             _mapper = Substitute.For<IMapper>();
+            _loggerMock = Substitute.For<ILogger<UpdateSaleHandler>>();
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new UpdateSaleProfile());
             });
 
             //_mapper = config.CreateMapper();
-            _handler = new UpdateSaleHandler(_repositoryMock, _mapper);
+            _handler = new UpdateSaleHandler(_repositoryMock, _mapper, _loggerMock);
         }
 
         [Fact]
@@ -110,6 +112,7 @@ namespace Ambev.DeveloperEvaluation.Unit.Application
             result.Branch.Should().Be("Filial Atualizada");
         }
 
+       
     }
 }
 

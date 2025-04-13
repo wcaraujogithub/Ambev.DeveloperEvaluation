@@ -14,7 +14,11 @@
         /// </summary>
         /// 
         public Guid Id { get; set; }
+        public bool? Cancelled { get; set; }
+        public string? SaleNumber { get; set; }
         public string? Customer { get; set; }
-        public string? Branch { get; set; }  
+        public string? Branch { get; set; }
+        public string? TotalValue { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }

@@ -10,5 +10,5 @@ public class CreateSaleResponse
     /// <summary>
     /// The unique identifier of the created user
     /// </summary>
-    public Guid Id { get; set; }
+    public Guid? Id { get; set; }
 }

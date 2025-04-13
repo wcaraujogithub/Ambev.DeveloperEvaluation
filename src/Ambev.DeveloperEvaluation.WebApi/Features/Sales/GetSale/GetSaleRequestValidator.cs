@@ -1,3 +1,4 @@
+using Ambev.DeveloperEvaluation.Common.Constants;
 using FluentValidation;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Sales.GetSale;
@@ -14,6 +15,6 @@ public class GetSaleRequestValidator : AbstractValidator<GetSaleRequest>
     {
         RuleFor(x => x.Id)
             .NotEmpty()
-            .WithMessage("Sale ID is required");
+            .WithMessage(ValidationMessages.General.FieldIsRequired);
     }
 }

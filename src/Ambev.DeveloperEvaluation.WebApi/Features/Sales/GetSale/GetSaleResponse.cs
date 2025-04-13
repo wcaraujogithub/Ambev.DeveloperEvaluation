@@ -8,7 +8,7 @@ public class GetSaleResponse
     /// <summary>
     /// The unique identifier of the Sale
     /// </summary>
-    public Guid Id { get; set; }
+    public Guid? Id { get; set; }
     public List<GetSaleItemResponse>? Itens { get; set; }   
     public bool? Cancelled { get; set; } = false;
     public string? SaleNumber { get; set; }  

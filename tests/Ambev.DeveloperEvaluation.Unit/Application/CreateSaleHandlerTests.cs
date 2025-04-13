@@ -4,6 +4,8 @@ using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Unit.Application.TestData;
 using AutoMapper;
 using FluentAssertions;
+using FluentValidation;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
 
@@ -14,18 +16,19 @@ namespace Ambev.DeveloperEvaluation.Unit.Application
         private readonly ISaleRepository _repositoryMock;
         private readonly IMapper _mapper;
         private readonly CreateSaleHandler _handler;
-
+        private readonly ILogger<CreateSaleHandler> _loggerMock;
         public CreateSaleHandlerTests()
         {
             _repositoryMock = Substitute.For<ISaleRepository>();
             _mapper = Substitute.For<IMapper>();
+            _loggerMock = Substitute.For<ILogger<CreateSaleHandler>>();
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new CreateSaleProfile());
             });
 
             //_mapper = config.CreateMapper();
-            _handler = new CreateSaleHandler(_repositoryMock, _mapper);
+            _handler = new CreateSaleHandler(_repositoryMock, _mapper, _loggerMock);
         }
 
         [Fact(DisplayName = "Given valid sale data When creating sale Then returns success response")]
@@ -97,7 +100,7 @@ namespace Ambev.DeveloperEvaluation.Unit.Application
         {
             // Given
             var command = CreateSaleHandlerTestData.GenerateValidSaleCommand();
-         //   command.Items = [CreateSaleHandlerTestData.GenerateValidSaleItemCommand()];
+            //   command.Items = [CreateSaleHandlerTestData.GenerateValidSaleItemCommand()];
 
 
             Sale? saleReturns = new Sale
@@ -121,8 +124,8 @@ namespace Ambev.DeveloperEvaluation.Unit.Application
             }
 
             _mapper.Map<Sale>(command).Returns(saleReturns);
-          
-            
+
+
             _repositoryMock.CreateAsync(Arg.Any<Sale>(), Arg.Any<CancellationToken>())
                 .Returns(saleReturns);
 
@@ -137,6 +140,25 @@ namespace Ambev.DeveloperEvaluation.Unit.Application
                 c.Items == command.Items));
         }
 
+        [Fact]
+        public async Task CreateSaleHandler_Should_Throw_ValidationException_When_Command_Is_Invalid()
+        {
+            // Arrange
+            var command = new CreateSaleCommand(); // campos obrigatórios faltando
+
+
+            // Act
+            Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
+
+
+            // Assert
+            var exception = await act.Should().ThrowAsync<ValidationException>();
+            
+            // Verificando se a exceção contém erros esperados
+            exception.Which.Errors.Should().Contain(e =>
+                e.PropertyName == "SaleNumber" &&
+                e.ErrorMessage.Contains("required.")); 
+        }
     }
 }
 

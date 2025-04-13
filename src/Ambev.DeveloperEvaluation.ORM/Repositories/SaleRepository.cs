@@ -56,6 +56,27 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
             };
 
             // Validação e aplicação da ordenação
+            query = OrdernarCampos(order, query, allowedColumns);
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+
+            return new Domain.Common.PagedResult<Sale>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                CurrentPage = page,
+                PageSize = pageSize
+            };
+        }
+
+        private static IQueryable<Sale> OrdernarCampos(string? order, IQueryable<Sale> query, HashSet<string> allowedColumns)
+        {
             if (!string.IsNullOrWhiteSpace(order))
             {
                 // Divide as colunas por vírgula: "id desc, customer asc"
@@ -94,20 +115,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
                 query = query.OrderByDescending(s => s.CreatedAt); // padrão
             }
 
-            var totalCount = await query.CountAsync(cancellationToken);
-
-            var items = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync(cancellationToken);
-
-            return new Domain.Common.PagedResult<Sale>
-            {
-                Items = items,
-                TotalCount = totalCount,
-                CurrentPage = page,
-                PageSize = pageSize
-            };
+            return query;
         }
 
         /// <summary>
@@ -142,8 +150,8 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
                 return null;
 
             _context.Sales.Remove(sale);
-            await _context.SaveChangesAsync(cancellationToken);
-            return sale;
+            var result = await _context.SaveChangesAsync(cancellationToken);
+            return result >= 1 ? sale : null; 
         }
 
         /// <summary>
@@ -180,10 +188,6 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
             if (saleUpdate == null)
                 return null;
 
-            //como estou atualizando apenas alguns.
-            //Se no futuro precisar atualizar também os itens da venda,
-            //isso pode causar inconsistência.
-
             saleUpdate.Branch = sale.Branch;
             saleUpdate.Customer = sale.Customer;
             saleUpdate.UpdatedAt = DateTime.UtcNow;
@@ -191,7 +195,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Repositories
             _context.Sales.Update(saleUpdate);
             var result = await _context.SaveChangesAsync(cancellationToken);
 
-            return result >= 1 ? sale : null; ;
+            return result >= 1 ? saleUpdate : null; 
         }
     }
 }

@@ -1,3 +1,5 @@
+using Ambev.DeveloperEvaluation.Application.Sales.DeleteSale;
+using Ambev.DeveloperEvaluation.Common.Validation;
 using MediatR;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.GetSale;
@@ -19,5 +21,15 @@ public record GetByIdSaleQuery : IRequest<GetByIdSaleQueryResult>
     public GetByIdSaleQuery(Guid id)
     {
         Id = id;
+    }
+    public ValidationResultDetail Validate()
+    {
+        var validator = new GetByIdSaleValidator();
+        var result = validator.Validate(this);
+        return new ValidationResultDetail
+        {
+            IsValid = result.IsValid,
+            Errors = result.Errors.Select(o => (ValidationErrorDetail)o)
+        };
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 using FluentAssertions;
 using NSubstitute;
+using Microsoft.Extensions.Logging;
 
 namespace Ambev.DeveloperEvaluation.Integration.Repositories
 {
@@ -14,7 +15,7 @@ namespace Ambev.DeveloperEvaluation.Integration.Repositories
     {
         private readonly DefaultContext _context;
         private readonly SaleRepository _repository;
-
+        private readonly ILogger<CreateSaleHandler> _loggerMock;
         public SaleRepositoryTests()
         {
             var options = new DbContextOptionsBuilder<DefaultContext>()
@@ -24,9 +25,9 @@ namespace Ambev.DeveloperEvaluation.Integration.Repositories
             _context = new DefaultContext(options);
             _repository = new SaleRepository(_context);
 
+            _loggerMock = Substitute.For<ILogger<CreateSaleHandler>>();
 
-           
-      
+
             _context.Database.EnsureCreated();
         }
 
@@ -97,7 +98,7 @@ namespace Ambev.DeveloperEvaluation.Integration.Repositories
                 cfg.AddProfile<CreateSaleProfile>();
             }).CreateMapper();
 
-            var handler = new CreateSaleHandler(repository, mapper);
+            var handler = new CreateSaleHandler(repository, mapper ,_loggerMock);
 
             var command = new CreateSaleCommand
             {

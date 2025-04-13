@@ -4,6 +4,7 @@ using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Shouldly;
 using Xunit;
@@ -15,12 +16,15 @@ namespace Ambev.DeveloperEvaluation.Unit.Domain.Validation
         private readonly ISaleRepository _saleRepository;
         private readonly IMapper _mapper;
         private readonly CreateSaleHandler _handler;
+        private readonly ILogger<CreateSaleHandler> _loggerMock;
+
 
         public SaleRepositoryTests()
         {
             _saleRepository = Substitute.For<ISaleRepository>();
             _mapper = Substitute.For<IMapper>();
-            _handler = new CreateSaleHandler(_saleRepository, _mapper);
+            _loggerMock = Substitute.For<ILogger<CreateSaleHandler>>();
+            _handler = new CreateSaleHandler(_saleRepository, _mapper, _loggerMock);
         }
 
         [Fact]

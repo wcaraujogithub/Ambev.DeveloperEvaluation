@@ -9,7 +9,6 @@ using FluentAssertions;
 using System.Net;
 using System.Net.Http.Json;
 using Xunit;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Ambev.DeveloperEvaluation.Integration.WebApi.Sales
 {
@@ -22,8 +21,6 @@ namespace Ambev.DeveloperEvaluation.Integration.WebApi.Sales
             _client = factory.CreateClient();
         }
 
-
-
         [Fact]
         public async Task CreateSale_Should_Return_Created()
         {
@@ -34,9 +31,9 @@ namespace Ambev.DeveloperEvaluation.Integration.WebApi.Sales
             var response = await _client.PostAsJsonAsync("/api/sales", command);
 
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
         }
-        
+
         [Fact]
         public async Task UpdateSale_Should_Return_OK()
         {
@@ -46,13 +43,13 @@ namespace Ambev.DeveloperEvaluation.Integration.WebApi.Sales
 
 
             var createResponse = await _client.PostAsJsonAsync("/api/sales", command);
-            createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
             // Recupera o ID da venda criada
             var createdContent = await createResponse.Content.ReadFromJsonAsync<ApiResponseWithData<CreateSaleResponse>>(); // ajusta conforme o retorno real
             createdContent.Should().NotBeNull();
             var saleId = createdContent.Data!.Id;
-         
+
             // Act: envia comando de update com novo cliente e item
             var updateCommand = new
             {
@@ -78,19 +75,20 @@ namespace Ambev.DeveloperEvaluation.Integration.WebApi.Sales
             var command = CreateSaleHandlerTestData.GenerateValidSaleCommand();
 
             var createResponse = await _client.PostAsJsonAsync("/api/sales", command);
-            createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
             // Recupera o ID da venda criada
             var createdContent = await createResponse.Content.ReadFromJsonAsync<ApiResponseWithData<CreateSaleResponse>>(); // ajusta conforme o retorno real
             createdContent.Should().NotBeNull();
             var saleId = createdContent.Data!.Id;
-            
+
 
             var delete = await _client.DeleteAsync($"/api/sales/{saleId}");
 
             // Assert
             delete.StatusCode.Should().Be(HttpStatusCode.OK);
         }
+      
         [Fact]
         public async Task GetSaleById_Should_Return_Sale_When_Exists()
         {
@@ -100,8 +98,8 @@ namespace Ambev.DeveloperEvaluation.Integration.WebApi.Sales
             var createResponse = await _client.PostAsJsonAsync("/api/sales", command);
             createResponse.EnsureSuccessStatusCode();
 
-            var createResult = await createResponse.Content.ReadFromJsonAsync<ApiResponseWithData<CreateSaleResponse>>();
-            var saleId = createResult.Data.Id;
+            var createResult = await createResponse.Content.ReadFromJsonAsync<ApiResponseWithData<GetSaleResponse>>();
+            var saleId = createResult?.Data?.Id;
 
             // Act - faz o GET da venda criada
             var getResponse = await _client.GetAsync($"/api/sales/{saleId}");
@@ -109,7 +107,7 @@ namespace Ambev.DeveloperEvaluation.Integration.WebApi.Sales
             // Assert
             getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
             var getResult = await getResponse.Content.ReadFromJsonAsync<ApiResponseWithData<GetSaleResponse>>();
-            getResult.Data.Id.Should().Be(saleId);
+            getResult?.Data?.Id.Should().Be(saleId);
         }
 
         [Fact]
@@ -141,7 +139,7 @@ namespace Ambev.DeveloperEvaluation.Integration.WebApi.Sales
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
-      
+
         [Fact]
         public async Task DeleteSale_Should_Return_NotFound_When_Sale_Does_Not_Exist()
         {

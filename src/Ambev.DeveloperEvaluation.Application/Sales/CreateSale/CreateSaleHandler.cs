@@ -3,7 +3,7 @@ using MediatR;
 using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Entities;
-using Ambev.DeveloperEvaluation.Common.Security;
+using Microsoft.Extensions.Logging;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 
@@ -14,7 +14,7 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
 {
     private readonly ISaleRepository _saleRepository;
     private readonly IMapper _mapper;
-
+    private readonly ILogger<CreateSaleHandler> _logger;
 
     /// <summary>
     /// Initializes a new instance of CreateSaleHandler
@@ -22,10 +22,11 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
     /// <param name="SaleRepository">The Sale repository</param>
     /// <param name="mapper">The AutoMapper instance</param>
     /// <param name="validator">The validator for CreateSaleCommand</param>
-    public CreateSaleHandler(ISaleRepository saleRepository, IMapper mapper)
+    public CreateSaleHandler(ISaleRepository saleRepository, IMapper mapper, ILogger<CreateSaleHandler> logger)
     {
         _saleRepository = saleRepository;
         _mapper = mapper;
+        _logger = logger;
     }
 
     /// <summary>
@@ -36,18 +37,22 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
     /// <returns>The created sale details</returns>
     public async Task<CreateSaleResult> Handle(CreateSaleCommand command, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Iniciando inclusão de venda: {@command}", command);
         var validator = new CreateSaleCommandValidator();
         var validationResult = await validator.ValidateAsync(command, cancellationToken);
 
         if (!validationResult.IsValid)
+        {
+            _logger.LogWarning("Falha na validação da inclusão da venda: {@Errors}", validationResult.Errors);
             throw new ValidationException(validationResult.Errors);
+        }
 
         var sale = _mapper.Map<Sale>(command);
-        
 
         decimal total = 0;
         foreach (var prod in sale.Items)
         {
+            _logger.LogInformation("Realizando os calculos do item. ID: {@ProdctId}", prod.ProductId);
             prod.Discounts = CalcularDesconto(prod.Quantities, prod.UnitPrices);
             prod.TotalValueItem = prod.UnitPrices * prod.Quantities - prod.Discounts;
             total += prod.TotalValueItem;
@@ -57,7 +62,8 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
         sale.UpdatedAt = DateTime.UtcNow;
 
         var createdSale = await _saleRepository.CreateAsync(sale, cancellationToken);
-        var result = _mapper.Map<CreateSaleResult>(createdSale);       
+        var result = _mapper.Map<CreateSaleResult>(createdSale);
+        _logger.LogInformation("Venda criada com sucesso. ID: {@SaleId}", sale.Id);
         return result;
     }
 

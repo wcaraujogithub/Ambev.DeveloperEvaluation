@@ -21,7 +21,7 @@ public class UpdateSaleCommandValidator : AbstractValidator<UpdateSaleCommand>
         RuleFor(sale => sale.Customer)
               .NotEmpty().WithMessage(ValidationMessages.General.FieldIsRequired)
             .MinimumLength(3)
-            .WithMessage(ValidationMessages.General.MaximumLength)
+            .WithMessage(ValidationMessages.General.MinimumLength)
             .MaximumLength(50)
             .WithMessage(ValidationMessages.General.MaximumLength);
         RuleFor(x => x.Branch)

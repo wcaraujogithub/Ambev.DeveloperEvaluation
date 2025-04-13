@@ -27,7 +27,14 @@ namespace Ambev.DeveloperEvaluation.Unit.Domain.Entities.TestData
     .RuleFor(u => u.Discounts, f => f.Random.Decimal())
     .RuleFor(u => u.TotalValueItem, f => f.Random.Decimal());
 
-
+        public static List<Sale> GenerateValidListSale(int quantity)
+        {
+            return SaleFaker.Generate(quantity);
+        }
+        public static List<SaleItem> GenerateValidListSaleItems(int quantity)
+        {
+            return SaleItemFaker.Generate(quantity);
+        }
         public static Sale GenerateValidSale()
         {
             return SaleFaker.Generate();

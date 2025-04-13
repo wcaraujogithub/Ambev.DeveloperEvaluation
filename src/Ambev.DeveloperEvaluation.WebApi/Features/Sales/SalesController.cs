@@ -48,18 +48,22 @@ public class SalesController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateSale([FromBody] CreateSaleRequest request, CancellationToken cancellationToken)
     {
-
-
+        _logger.LogInformation("Iniciando requisição name: {@name} - request: {@request}", nameof(CreateSale), request);
         var validator = new CreateSaleRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
+        {
+            _logger.LogWarning("Falha na validação da venda: {@Errors}", validationResult.Errors);
             return BadRequest(validationResult.Errors);
+        }
 
         var command = _mapper.Map<CreateSaleCommand>(request);
         var response = await _mediator.Send(command, cancellationToken);
         var result = _mapper.Map<CreateSaleResponse>(response);
-        return Ok(result);
+
+        _logger.LogInformation("Requisição name: {@name} finalizada com sucesso. ID: {@id}", nameof(CreateSale), response.Id);
+        return Created("GetByIdSale", new { id = result.Id }, result);
     }
 
 
@@ -75,6 +79,7 @@ public class SalesController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteSale([FromRoute] Guid id, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Iniciando requisição name: {@name} - ID: {@id}", nameof(DeleteSale), id);
         var request = new DeleteSaleRequest { Id = id };
         var validator = new DeleteSaleRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
@@ -83,13 +88,18 @@ public class SalesController : BaseController
             return BadRequest(validationResult.Errors);
 
         var command = _mapper.Map<DeleteSaleCommand>(request.Id);
-        await _mediator.Send(command, cancellationToken);
+        var result = await _mediator.Send(command, cancellationToken);
 
-        return Ok(new ApiResponse
+        if (result is null)
         {
-            Success = true,
-            Message = "Sale deleted successfully"
-        });
+            _logger.LogInformation("Requisição name: {@name} finalizada com falha. ID: {@id}", nameof(DeleteSale), id);
+            return BadRequest(result);
+        }
+
+        _logger.LogInformation("Requisição name: {@name} finalizada com sucesso. ID: {@id}", nameof(DeleteSale), id);
+        return Ok(result);
+
+
     }
 
 
@@ -99,12 +109,13 @@ public class SalesController : BaseController
     /// <param name="id">The unique identifier of the Sale</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The Sale details if found</returns>
-    [HttpGet("{id}")]
+    [HttpGet("{id}", Name = "GetByIdSale")]
     [ProducesResponseType(typeof(ApiResponseWithData<GetSaleResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetSale([FromRoute] Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetByIdSale([FromRoute] Guid id, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Iniciando requisição name: {@name} - ID: {@id}", nameof(GetByIdSale), id);
         var request = new GetSaleRequest { Id = id };
         var validator = new GetSaleRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
@@ -118,9 +129,17 @@ public class SalesController : BaseController
         var result = _mapper.Map<GetSaleResponse>(response);
 
         if (result is null)
+        {
+            _logger.LogInformation("Requisição name: {@name} não localizada. ID: {@id}", nameof(GetByIdSale), id);
             return NotFound(result);
+        }
         else
+        {
+            _logger.LogInformation("Requisição name: {@name} finalizada com sucesso. ID: {@id}", nameof(GetByIdSale), id);
             return Ok(result);
+
+        }
+
 
     }
 
@@ -135,6 +154,7 @@ public class SalesController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ListSale([FromQuery] ListSalesQuery query, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Iniciando requisição name: {@name} - request: {@query}", nameof(ListSale), query);
         var pagedResult = await _mediator.Send(query, cancellationToken: cancellationToken);
 
         var mapped = _mapper.Map<List<ListSaleResponse>>(pagedResult.Items);
@@ -145,7 +165,7 @@ public class SalesController : BaseController
             pagedResult.CurrentPage,
             pagedResult.PageSize
             );
-
+        _logger.LogInformation("Requisição name: {@name} finalizada com sucesso. request: {@query}", nameof(ListSale), query);
         return OkPaginated(paginated);
 
     }
@@ -162,6 +182,7 @@ public class SalesController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateSale([FromBody] UpdateSaleRequest request, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Iniciando requisição name: {@name} - request: {@request}", nameof(UpdateSale), request);
         var validator = new UpdateSaleRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
@@ -174,9 +195,13 @@ public class SalesController : BaseController
         var result = _mapper.Map<UpdateSaleResponse>(response);
 
         if (result is null)
-            return NotFound(result);
-        else
-            return Ok(result);
+        {
+            _logger.LogInformation("Requisição name: {@name} finalizada com sucesso. request: {@request}", nameof(ListSale), request);
+            return BadRequest(result);
+        }
+
+        _logger.LogInformation("Requisição name: {@name} finalizada com falha. request: {@request}", nameof(ListSale), request);
+        return Ok(result);
 
     }
 }

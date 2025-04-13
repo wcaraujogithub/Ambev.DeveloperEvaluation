@@ -28,14 +28,15 @@ public class CreateSaleCommandValidator : AbstractValidator<CreateSaleCommand>
             .WithMessage(ValidationMessages.General.FieldIsRequired);
 
         RuleFor(sale => sale.Customer)
-              .NotEmpty().WithMessage(ValidationMessages.General.FieldIsRequired)
+              .NotEmpty()
+              .WithMessage(ValidationMessages.General.FieldIsRequired)
             .MinimumLength(3)
             .WithMessage(ValidationMessages.General.MaximumLength)
             .MaximumLength(50)
-            .WithMessage(ValidationMessages.General.MaximumLength); 
-        
+            .WithMessage(ValidationMessages.General.MaximumLength);
+
         RuleFor(x => x.Branch)
-            .NotEmpty()
+            .NotEmpty().WithName(c => c.Branch)
             .WithMessage(ValidationMessages.General.FieldIsRequired);
 
         RuleFor(x => x.Items)
