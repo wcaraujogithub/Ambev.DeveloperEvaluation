@@ -12,12 +12,14 @@ using Ambev.DeveloperEvaluation.WebApi.Features.Sales.DeleteSale;
 using Ambev.DeveloperEvaluation.Application.Sales.ListSales;
 using Ambev.DeveloperEvaluation.Application.Sales.UpdateSale;
 using Ambev.DeveloperEvaluation.WebApi.Middleware;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Sales;
 
 /// <summary>
 /// Controller for managing Sale operations
 /// </summary>
+[Authorize(Roles = "Admin")]
 [ApiController]
 [Route("api/[controller]")]
 public class SalesController : BaseController
