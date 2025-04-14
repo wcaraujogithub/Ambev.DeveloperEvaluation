@@ -4,6 +4,7 @@ using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Microsoft.Extensions.Logging;
+using Ambev.DeveloperEvaluation.Domain.Mensaging;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 
@@ -15,6 +16,7 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
     private readonly ISaleRepository _saleRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<CreateSaleHandler> _logger;
+    private readonly IMediator _mediator;
 
     /// <summary>
     /// Initializes a new instance of CreateSaleHandler
@@ -22,11 +24,12 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
     /// <param name="SaleRepository">The Sale repository</param>
     /// <param name="mapper">The AutoMapper instance</param>
     /// <param name="validator">The validator for CreateSaleCommand</param>
-    public CreateSaleHandler(ISaleRepository saleRepository, IMapper mapper, ILogger<CreateSaleHandler> logger)
+    public CreateSaleHandler(ISaleRepository saleRepository, IMapper mapper, ILogger<CreateSaleHandler> logger, IMediator mediator)
     {
         _saleRepository = saleRepository;
         _mapper = mapper;
         _logger = logger;
+        _mediator = mediator;
     }
 
     /// <summary>
@@ -62,8 +65,19 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
         sale.UpdatedAt = DateTime.UtcNow;
 
         var createdSale = await _saleRepository.CreateAsync(sale, cancellationToken);
-        var result = _mapper.Map<CreateSaleResult>(createdSale);
+    
         _logger.LogInformation("Venda criada com sucesso. ID: {@SaleId}", sale.Id);
+
+        // Publica o evento
+        await _mediator.Publish(new SaleCreatedEvent
+        {
+            SaleId = createdSale.Id,
+            SaleNumber = createdSale.SaleNumber,
+            Customer = createdSale.Customer,
+            CreatedAt = createdSale.CreatedAt
+        }, cancellationToken);
+
+        var result = _mapper.Map<CreateSaleResult>(createdSale);
         return result;
     }
 
