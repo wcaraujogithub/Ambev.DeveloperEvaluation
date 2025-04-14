@@ -1,8 +1,11 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Sales.UpdateSale;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Mensaging;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
+using Ambev.DeveloperEvaluation.Unit.Domain.Entities.TestData;
 using AutoMapper;
 using FluentAssertions;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
@@ -13,6 +16,7 @@ namespace Ambev.DeveloperEvaluation.Unit.Application
 {
     public class UpdateSaleHandlerTests
     {
+        private readonly IMediator _mediatorMock;
         private readonly ISaleRepository _repositoryMock;
         private readonly IMapper _mapper;
         private readonly UpdateSaleHandler _handler;
@@ -21,6 +25,7 @@ namespace Ambev.DeveloperEvaluation.Unit.Application
         {
             _repositoryMock = Substitute.For<ISaleRepository>();
             _mapper = Substitute.For<IMapper>();
+            _mediatorMock = Substitute.For<IMediator>();
             _loggerMock = Substitute.For<ILogger<UpdateSaleHandler>>();
             var config = new MapperConfiguration(cfg =>
             {
@@ -28,7 +33,7 @@ namespace Ambev.DeveloperEvaluation.Unit.Application
             });
 
             //_mapper = config.CreateMapper();
-            _handler = new UpdateSaleHandler(_repositoryMock, _mapper, _loggerMock);
+            _handler = new UpdateSaleHandler(_repositoryMock, _mapper, _loggerMock, _mediatorMock);
         }
 
         [Fact]
@@ -112,7 +117,50 @@ namespace Ambev.DeveloperEvaluation.Unit.Application
             result.Branch.Should().Be("Filial Atualizada");
         }
 
-       
+        [Fact]
+        public async Task Handle_Should_Publish_SaleCreatedEvent_When_Sale_Is_Created()
+        {
+            // Arrange
+            var command = new UpdateSaleCommand
+            {
+                Id = Guid.NewGuid(), 
+                Customer = "Cliente Teste",
+                Branch = "Filial Teste"
+
+            };
+            var sale = SaleTestData.GenerateValidSale();
+            var saleResult = new UpdateSaleResult
+            {
+                Id = sale.Id,
+                Branch = sale.Branch,
+                Cancelled = sale.Cancelled,
+                Customer = sale.Customer,
+                SaleNumber = sale.SaleNumber,
+                TotalValue = sale.TotalValue.ToString(),
+                UpdatedAt = sale.UpdatedAt
+            };
+
+            _mapper.Map<Sale>(command).Returns(sale);
+            _mapper.Map<UpdateSaleResult>(sale).Returns(saleResult);
+
+            _repositoryMock.UpdateAsync(Arg.Any<Sale>(), Arg.Any<CancellationToken>())
+                           .Returns(sale);
+
+     
+
+            // Act
+            var result = await _handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            await _mediatorMock.Received(1).Publish(Arg.Is<SaleUpdatedEvent>(e =>
+                e.SaleId == sale.Id &&
+                e.SaleNumber == sale.SaleNumber &&
+                e.Customer == sale.Customer
+            ), Arg.Any<CancellationToken>());
+
+            result.Should().NotBeNull();
+            result.Id.Should().Be(sale.Id);
+        }
     }
 }
 
