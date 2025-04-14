@@ -46,6 +46,7 @@ public class SalesController : BaseController
     /// <param name="request">The Sale creation request</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The created Sale details</returns>
+    [AllowAnonymous]
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponseWithData<CreateSaleResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
