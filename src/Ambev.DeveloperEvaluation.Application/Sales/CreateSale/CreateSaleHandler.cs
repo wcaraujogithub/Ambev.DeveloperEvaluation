@@ -76,9 +76,8 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
             Customer = createdSale.Customer,
             CreatedAt = createdSale.CreatedAt
         }, cancellationToken);
-
-        var result = _mapper.Map<CreateSaleResult>(createdSale);
-        return result;
+              
+        return _mapper.Map<CreateSaleResult>(createdSale);
     }
 
     private decimal CalcularDesconto(int quantidade, decimal precoUnitario)

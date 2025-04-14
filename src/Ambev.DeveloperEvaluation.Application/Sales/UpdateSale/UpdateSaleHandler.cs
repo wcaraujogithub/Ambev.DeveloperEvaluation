@@ -4,6 +4,7 @@ using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Microsoft.Extensions.Logging;
+using Ambev.DeveloperEvaluation.Domain.Mensaging;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.UpdateSale;
 
@@ -15,18 +16,19 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
     private readonly ISaleRepository _saleRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<UpdateSaleHandler> _logger;
-
+    private readonly IMediator _mediator;
     /// <summary>
     /// Initializes a new instance of UpdateSaleHandler
     /// </summary>
     /// <param name="SaleRepository">The Sale repository</param>
     /// <param name="mapper">The AutoMapper instance</param>
     /// <param name="validator">The validator for UpdateSaleCommand</param>
-    public UpdateSaleHandler(ISaleRepository saleRepository, IMapper mapper, ILogger<UpdateSaleHandler> logger)
+    public UpdateSaleHandler(ISaleRepository saleRepository, IMapper mapper, ILogger<UpdateSaleHandler> logger, IMediator mediator)
     {
         _saleRepository = saleRepository;
         _mapper = mapper;
         _logger = logger;
+        _mediator = mediator;
     }
 
     /// <summary>
@@ -49,14 +51,25 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
         }
         var sale = _mapper.Map<Sale>(command);
 
-        var result = await _saleRepository.UpdateAsync(sale, cancellationToken);
-        if (result is null)
+        var updatedSale = await _saleRepository.UpdateAsync(sale, cancellationToken);
+        if (updatedSale is null)
         {
             _logger.LogWarning("Sale with ID {Id} not found", command.Id);
             throw new KeyNotFoundException($"Sale com ID {command.Id} not found.");
         }
+
         _logger.LogInformation("Venda atualizada com sucesso. ID: {@Id}", command.Id);
 
-        return _mapper.Map<UpdateSaleResult>(result);
+        // Publica o evento
+        await _mediator.Publish(new SaleUpdatedEvent
+        {
+            SaleId = updatedSale.Id,
+            SaleNumber = updatedSale.SaleNumber,
+            Customer = updatedSale.Customer,
+            CreatedAt = updatedSale.CreatedAt
+        }, cancellationToken);
+
+
+        return _mapper.Map<UpdateSaleResult>(updatedSale);
     }
 }

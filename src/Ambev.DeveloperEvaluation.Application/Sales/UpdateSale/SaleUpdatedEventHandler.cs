@@ -4,18 +4,18 @@ using Microsoft.Extensions.Logging;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.CreateSale
 {
-    public class SaleCreatedEventHandler : INotificationHandler<SaleCreatedEvent>
+    public class SaleUpdatedEventHandler : INotificationHandler<SaleUpdatedEvent>
     {
-        private readonly ILogger<SaleCreatedEventHandler> _logger;
+        private readonly ILogger<SaleUpdatedEventHandler> _logger;
 
-        public SaleCreatedEventHandler(ILogger<SaleCreatedEventHandler> logger)
+        public SaleUpdatedEventHandler(ILogger<SaleUpdatedEventHandler> logger)
         {
             _logger = logger;
         }
 
-        public Task Handle(SaleCreatedEvent notification, CancellationToken cancellationToken)
+        public Task Handle(SaleUpdatedEvent notification, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Evento SaleCreated recebido: Venda {SaleId} - {SaleNumber}, Cliente {Customer}, Data {CreatedAt}",
+            _logger.LogInformation("Evento SaleModified recebido: Venda {SaleId} - {SaleNumber}, Cliente {Customer}, Data {CreatedAt}",
                 notification.SaleId,
                 notification.SaleNumber,
                 notification.Customer,
