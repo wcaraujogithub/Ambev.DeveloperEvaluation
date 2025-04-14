@@ -18,7 +18,7 @@ API desenvolvida como parte do processo seletivo da Ambev Tech, com foco em boas
 ## 🧰 Tecnologias e Skills Aplicadas
 - **[.NET 8](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 - **.NET Core**, C#
-- **Entity Framework Core (InMemory)**
+- **Entity Framework Core  (Postgres)**
 - **CQRS**, **MediatR**, **FluentValidation**, **AutoMapper**
 - **Clean Architecture**
 - **xUnit**, **Testes de Integração**
