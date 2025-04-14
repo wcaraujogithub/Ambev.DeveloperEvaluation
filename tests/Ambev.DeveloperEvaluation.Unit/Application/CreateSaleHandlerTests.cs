@@ -1,10 +1,13 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Mensaging;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Unit.Application.TestData;
+using Ambev.DeveloperEvaluation.Unit.Domain.Entities.TestData;
 using AutoMapper;
 using FluentAssertions;
 using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
@@ -15,11 +18,13 @@ namespace Ambev.DeveloperEvaluation.Unit.Application
     {
         private readonly ISaleRepository _repositoryMock;
         private readonly IMapper _mapper;
+        private readonly IMediator _mediatorMock;
         private readonly CreateSaleHandler _handler;
         private readonly ILogger<CreateSaleHandler> _loggerMock;
         public CreateSaleHandlerTests()
         {
             _repositoryMock = Substitute.For<ISaleRepository>();
+            _mediatorMock = Substitute.For<IMediator>();
             _mapper = Substitute.For<IMapper>();
             _loggerMock = Substitute.For<ILogger<CreateSaleHandler>>();
             var config = new MapperConfiguration(cfg =>
@@ -28,7 +33,7 @@ namespace Ambev.DeveloperEvaluation.Unit.Application
             });
 
             //_mapper = config.CreateMapper();
-            _handler = new CreateSaleHandler(_repositoryMock, _mapper, _loggerMock);
+            _handler = new CreateSaleHandler(_repositoryMock, _mapper, _loggerMock, _mediatorMock);
         }
 
         [Fact(DisplayName = "Given valid sale data When creating sale Then returns success response")]
@@ -153,11 +158,41 @@ namespace Ambev.DeveloperEvaluation.Unit.Application
 
             // Assert
             var exception = await act.Should().ThrowAsync<ValidationException>();
-            
+
             // Verificando se a exceção contém erros esperados
             exception.Which.Errors.Should().Contain(e =>
                 e.PropertyName == "SaleNumber" &&
-                e.ErrorMessage.Contains("required.")); 
+                e.ErrorMessage.Contains("required."));
+        }
+
+        [Fact]
+        public async Task Handle_Should_Publish_SaleCreatedEvent_When_Sale_Is_Created()
+        {
+            // Arrange
+            var command = CreateSaleHandlerTestData.GenerateValidSaleCommand();
+            var sale = SaleTestData.GenerateValidSale();
+            var saleResult = new CreateSaleResult { Id = sale.Id, Success =true };
+
+            _mapper.Map<Sale>(command).Returns(sale);
+            _mapper.Map<CreateSaleResult>(sale).Returns(saleResult);
+
+            _repositoryMock.CreateAsync(Arg.Any<Sale>(), Arg.Any<CancellationToken>())
+                           .Returns(sale);
+
+            var handler = new CreateSaleHandler(_repositoryMock, _mapper, _loggerMock, _mediatorMock);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            await _mediatorMock.Received(1).Publish(Arg.Is<SaleCreatedEvent>(e =>
+                e.SaleId == sale.Id &&
+                e.SaleNumber == sale.SaleNumber &&
+                e.Customer == sale.Customer
+            ), Arg.Any<CancellationToken>());
+
+            result.Should().NotBeNull();
+            result.Id.Should().Be(sale.Id);
         }
     }
 }

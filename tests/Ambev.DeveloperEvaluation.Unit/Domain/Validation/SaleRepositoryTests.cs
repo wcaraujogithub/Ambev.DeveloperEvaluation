@@ -3,6 +3,7 @@ using Ambev.DeveloperEvaluation.Domain.Common;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using AutoMapper;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -17,14 +18,15 @@ namespace Ambev.DeveloperEvaluation.Unit.Domain.Validation
         private readonly IMapper _mapper;
         private readonly CreateSaleHandler _handler;
         private readonly ILogger<CreateSaleHandler> _loggerMock;
-
+        private readonly IMediator _mediatorMock;
 
         public SaleRepositoryTests()
         {
             _saleRepository = Substitute.For<ISaleRepository>();
             _mapper = Substitute.For<IMapper>();
+            _mediatorMock = Substitute.For<IMediator>();
             _loggerMock = Substitute.For<ILogger<CreateSaleHandler>>();
-            _handler = new CreateSaleHandler(_saleRepository, _mapper, _loggerMock);
+            _handler = new CreateSaleHandler(_saleRepository, _mapper, _loggerMock, _mediatorMock);
         }
 
         [Fact]

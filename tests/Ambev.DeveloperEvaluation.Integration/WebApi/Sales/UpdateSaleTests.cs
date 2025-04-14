@@ -1,4 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
+using Ambev.DeveloperEvaluation.Application.Sales.UpdateSale;
 using Ambev.DeveloperEvaluation.Integration.Application.TestData;
 using Ambev.DeveloperEvaluation.Integration.Fixtures;
 using Ambev.DeveloperEvaluation.WebApi;
@@ -27,6 +28,8 @@ namespace Ambev.DeveloperEvaluation.Integration.WebApi.Sales
             // Arrange
             var command = CreateSaleHandlerTestData.GenerateValidSaleCommand();
 
+            GerarIdempotencykeyHeader();
+
             // Ação: cria a requisição POST valida
             var response = await _client.PostAsJsonAsync("/api/sales", command);
 
@@ -41,27 +44,24 @@ namespace Ambev.DeveloperEvaluation.Integration.WebApi.Sales
             // Arrange
             var command = CreateSaleHandlerTestData.GenerateValidSaleCommand();
 
-
+            GerarIdempotencykeyHeader();
             var createResponse = await _client.PostAsJsonAsync("/api/sales", command);
             createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
             // Recupera o ID da venda criada
             var createdContent = await createResponse.Content.ReadFromJsonAsync<ApiResponseWithData<CreateSaleResponse>>(); // ajusta conforme o retorno real
             createdContent.Should().NotBeNull();
-            var saleId = createdContent.Data!.Id;
+            var saleId = createdContent?.Data?.Id;
 
             // Act: envia comando de update com novo cliente e item
-            var updateCommand = new
+            var updateCommand = new UpdateSaleRequest()
             {
-                Id = saleId,
+                Id = (Guid)saleId,
                 Customer = "Cliente Atualizado",
-                Branch = "Filial Atualizada",
-                Items = new[]
-                {
-            new { ProductId = Guid.NewGuid(), Quantities = 3, UnitPrices = 99.90m }
-        }
+                Branch = "Filial Atualizada"               
             };
 
+            GerarIdempotencykeyHeader();
             var update = await _client.PutAsJsonAsync("/api/sales", updateCommand);
 
             // Assert
@@ -73,6 +73,7 @@ namespace Ambev.DeveloperEvaluation.Integration.WebApi.Sales
         {
             // Arrange
             var command = CreateSaleHandlerTestData.GenerateValidSaleCommand();
+            GerarIdempotencykeyHeader();
 
             var createResponse = await _client.PostAsJsonAsync("/api/sales", command);
             createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -82,7 +83,7 @@ namespace Ambev.DeveloperEvaluation.Integration.WebApi.Sales
             createdContent.Should().NotBeNull();
             var saleId = createdContent.Data!.Id;
 
-
+            GerarIdempotencykeyHeader();
             var delete = await _client.DeleteAsync($"/api/sales/{saleId}");
 
             // Assert
@@ -94,7 +95,7 @@ namespace Ambev.DeveloperEvaluation.Integration.WebApi.Sales
         {
             // Arrange 
             var command = CreateSaleHandlerTestData.GenerateValidSaleCommand();
-
+            GerarIdempotencykeyHeader();
             var createResponse = await _client.PostAsJsonAsync("/api/sales", command);
             createResponse.EnsureSuccessStatusCode();
 
@@ -133,7 +134,7 @@ namespace Ambev.DeveloperEvaluation.Integration.WebApi.Sales
         public async Task UpdateSale_Should_Return_NotFound_When_Sale_Does_Not_Exist()
         {
             var updateCommand = CreateSaleHandlerTestData.GenerateValidSaleCommand();
-
+            GerarIdempotencykeyHeader();
             var response = await _client.PutAsJsonAsync("/api/sales", updateCommand);
 
             // Assert
@@ -143,7 +144,8 @@ namespace Ambev.DeveloperEvaluation.Integration.WebApi.Sales
         [Fact]
         public async Task DeleteSale_Should_Return_NotFound_When_Sale_Does_Not_Exist()
         {
-            var updateCommand = CreateSaleHandlerTestData.GenerateValidSaleCommand();
+    
+            GerarIdempotencykeyHeader();
 
             var response = await _client.DeleteAsync($"/api/sales/{Guid.NewGuid()}");
 
@@ -159,5 +161,11 @@ namespace Ambev.DeveloperEvaluation.Integration.WebApi.Sales
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
+        private void GerarIdempotencykeyHeader()
+        {
+            var idempotencyKey = Guid.NewGuid().ToString();
+            _client.DefaultRequestHeaders.Remove("Idempotency-Key");
+            _client.DefaultRequestHeaders.Add("Idempotency-Key", idempotencyKey);
+        }
     }
 }

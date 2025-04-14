@@ -8,6 +8,7 @@ using Xunit;
 using FluentAssertions;
 using NSubstitute;
 using Microsoft.Extensions.Logging;
+using MediatR;
 
 namespace Ambev.DeveloperEvaluation.Integration.Repositories
 {
@@ -15,9 +16,11 @@ namespace Ambev.DeveloperEvaluation.Integration.Repositories
     {
         private readonly DefaultContext _context;
         private readonly SaleRepository _repository;
+        private readonly IMediator _mediatorMock;
         private readonly ILogger<CreateSaleHandler> _loggerMock;
         public SaleRepositoryTests()
         {
+            _mediatorMock = Substitute.For<IMediator>();
             var options = new DbContextOptionsBuilder<DefaultContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
@@ -98,7 +101,7 @@ namespace Ambev.DeveloperEvaluation.Integration.Repositories
                 cfg.AddProfile<CreateSaleProfile>();
             }).CreateMapper();
 
-            var handler = new CreateSaleHandler(repository, mapper ,_loggerMock);
+            var handler = new CreateSaleHandler(repository, mapper ,_loggerMock, _mediatorMock);
 
             var command = new CreateSaleCommand
             {
