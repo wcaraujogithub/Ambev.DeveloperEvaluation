@@ -1,6 +1,6 @@
-# 🛡️ Ambev Developer Evaluation - Sales API
+# 🛡️  Developer Evaluation - Sales API
 
-API desenvolvida como parte do processo seletivo da Ambev Tech, com foco em boas práticas de arquitetura, testes, validações e extensibilidade.
+API desenvolvida com foco em boas práticas de arquitetura, testes, validações e extensibilidade.
 
 ---
 
@@ -88,7 +88,7 @@ Idempotency-Key: 03d8e1b7-7c6b-4f21-9506-6c64bbabf5c2
 
 ---
 
-## Documentação Técnica - Projeto [Ambev Developer Evaluation - Sales API]
+## Documentação Técnica - Projeto [Developer Evaluation - Sales API]
 
 ### Visão Geral
 Sistema voltado para [descrever o propósito do projeto].
@@ -118,7 +118,7 @@ Sistema voltado para [descrever o propósito do projeto].
 
 ## Resumo Técnico - [Wesley]
 
-Atuando no projeto [Ambev Developer Evaluation], contribuí com decisões estratégicas, implementação de funcionalidades críticas e estruturação da base do sistema, demonstrando visão de arquitetura, boas práticas e foco em escalabilidade e qualidade.
+Atuando no projeto [Developer Evaluation], contribuí com decisões estratégicas, implementação de funcionalidades críticas e estruturação da base do sistema, demonstrando visão de arquitetura, boas práticas e foco em escalabilidade e qualidade.
 
 Assumi responsabilidades além de um desenvolvedor comum, contribuindo diretamente com decisões de arquitetura, melhorias estruturais e implementação de práticas que aumentaram a confiabilidade, testabilidade e escalabilidade do sistema.
 
@@ -158,6 +158,6 @@ Assumi responsabilidades além de um desenvolvedor comum, contribuindo diretamen
 
 ## 👨‍💻 Desenvolvedor
 
-**Seu Nome**  
+  
 🔗 [LinkedIn]https://www.linkedin.com/in/wcaraujoanalistasistema/  
 📧 wcaraujo@hotmail.com.br - (62) 99104-6911
