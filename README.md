@@ -91,7 +91,7 @@ Idempotency-Key: 03d8e1b7-7c6b-4f21-9506-6c64bbabf5c2
 ## Documentação Técnica - Projeto [Developer Evaluation - Sales API]
 
 ### Visão Geral
-Sistema voltado para [descrever o propósito do projeto].
+Sistema voltado para vendas.
 
 ### 📦 Arquitetura
 - Camadas: Application, Domain, Infrastructure
